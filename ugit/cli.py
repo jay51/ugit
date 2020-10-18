@@ -47,6 +47,11 @@ def parse_args():
     log_parser.set_defaults(func=log)
     log_parser.add_argument("oid", nargs="?")
 
+    # write that commit tree to current directory and set HEAD to point at that commit
+    checout_parser = commands.add_parser("checkout")
+    checout_parser.set_defaults(func=checkout)
+    checout_parser.add_argument("oid", nargs="?")
+
     return parser.parse_args()
 
 
@@ -82,3 +87,8 @@ def log(args):
         print()
         oid = commit.parent
 
+
+def checkout(args):
+    if args.oid:
+        base.checkout(args.oid)
+        print(f"on commit {args.oid}")

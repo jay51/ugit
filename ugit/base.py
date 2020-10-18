@@ -100,7 +100,7 @@ def commit(msg):
     commit += "\n"
     commit += f"{msg}\n"
     oid = data.hash_object(commit.encode(), "commit")
-    data.set_head(oid)
+    data.set_HEAD(oid)
     return oid
 
 
@@ -124,6 +124,13 @@ def get_commit(oid, debug=False):
     if debug:
         print(c)
     return c
+
+
+# get the commit information then read_tree of that commit and set the HEAD to point at that commit
+def checkout(oid):
+    commit = get_commit(oid)
+    read_tree(commit.tree)
+    data.set_HEAD(oid)
 
 
 # check if file or dir is ignored

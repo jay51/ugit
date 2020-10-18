@@ -34,6 +34,6 @@ def get_head():
             return f.read().strip()
 
 
-def set_head(oid):
+def set_HEAD(oid):
     with open(f"{GIT_DIR}/HEAD", "w") as f:
         f.write(oid)
