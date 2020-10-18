@@ -1,6 +1,9 @@
-from . import data
 import os
 import pathlib
+import itertools
+import operator
+from collections import namedtuple
+from . import data
 
 
 # recursively hash and store the content of directory inside object DB
@@ -88,7 +91,7 @@ def read_tree(tree_oid):
             print(f"writing {_bytes} bytes to {path}")
 
 
-# calls write_tree, take oid returend and a message and store it as a new object in the database
+# calls write_tree, take oid returend and a message and store it as a new object in the database of type commit
 def commit(msg):
     commit = f"tree {write_tree()}\n"
     HEAD = data.get_head()
@@ -99,6 +102,28 @@ def commit(msg):
     oid = data.hash_object(commit.encode(), "commit")
     data.set_head(oid)
     return oid
+
+
+# parse a commit object and return a commit tuple with tree, parent and msg of commit object
+Commit = namedtuple("Commit", ["tree", "parent", "msg"])
+def get_commit(oid, debug=False):
+    commit = data.get_object(oid, "commit").decode()
+    lines = iter(commit.splitlines())
+    parent, tree = "", ""
+    for line in itertools.takewhile(operator.truth, lines):
+        key, value = line.split(" ", 1)
+        if key == "tree":
+            tree = value
+        elif key == "parent":
+            parent = value
+        else:
+            assert False, f"Unkown Field {key}"
+
+    msg = "\n".join(lines)
+    c = Commit(tree=tree, parent=parent, msg=msg)
+    if debug:
+        print(c)
+    return c
 
 
 # check if file or dir is ignored
