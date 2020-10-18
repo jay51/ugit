@@ -3,7 +3,8 @@ import os
 import pathlib
 
 
-# recursively hash and store the content of directory inside object
+# recursively hash and store the content of directory inside object DB
+# And store all hashes, type of object and name for objects in new object with type tree
 def write_tree (directory='.'):
     entries = []
     it = os.scandir(directory)
@@ -90,10 +91,14 @@ def read_tree(tree_oid):
 # calls write_tree, take oid returend and a message and store it as a new object in the database
 def commit(msg):
     commit = f"tree {write_tree()}\n"
+    HEAD = data.get_head()
+    if HEAD:
+        commit += f"parent {HEAD}\n"
     commit += "\n"
     commit += f"{msg}\n"
-    return data.hash_object(commit.encode(), "commit")
-
+    oid = data.hash_object(commit.encode(), "commit")
+    data.set_head(oid)
+    return oid
 
 
 # check if file or dir is ignored

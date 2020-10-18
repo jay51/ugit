@@ -28,3 +28,12 @@ def get_object(oid, expected="blob"):
         assert _type == expected, f"Expected {expected}, got {_type}"
     return content
 
+def get_head():
+    if os.path.isfile(f"{GIT_DIR}/HEAD"):
+        with open(f"{GIT_DIR}/HEAD", "r") as f:
+            return f.read().strip()
+
+
+def set_head(oid):
+    with open(f"{GIT_DIR}/HEAD", "w") as f:
+        f.write(oid)
