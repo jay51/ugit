@@ -28,12 +28,17 @@ def get_object(oid, expected="blob"):
         assert _type == expected, f"Expected {expected}, got {_type}"
     return content
 
-def get_head():
-    if os.path.isfile(f"{GIT_DIR}/HEAD"):
-        with open(f"{GIT_DIR}/HEAD", "r") as f:
+def get_ref(ref):
+    rel_path = f"{GIT_DIR}/{ref}"
+    if os.path.isfile(rel_path):
+        with open(rel_path, "r") as f:
             return f.read().strip()
+    return None
 
 
-def set_HEAD(oid):
-    with open(f"{GIT_DIR}/HEAD", "w") as f:
+def update_ref(ref, oid):
+    # this is a hacky way to also be able to write tags to ugit/tags/<tagname>
+    rel_path = f"{GIT_DIR}/{ref}"
+    os.makedirs(os.path.dirname(rel_path), exist_ok=True)
+    with open(rel_path, "w") as f:
         f.write(oid)

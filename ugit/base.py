@@ -94,13 +94,13 @@ def read_tree(tree_oid):
 # calls write_tree, take oid returend and a message and store it as a new object in the database of type commit
 def commit(msg):
     commit = f"tree {write_tree()}\n"
-    HEAD = data.get_head()
+    HEAD = data.get_ref("HEAD")
     if HEAD:
         commit += f"parent {HEAD}\n"
     commit += "\n"
     commit += f"{msg}\n"
     oid = data.hash_object(commit.encode(), "commit")
-    data.set_HEAD(oid)
+    data.update_ref("HEAD", oid)
     return oid
 
 
@@ -130,7 +130,17 @@ def get_commit(oid, debug=False):
 def checkout(oid):
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.set_HEAD(oid)
+    data.update_ref("HEAD", oid)
+
+
+# attach an oid to a name
+def create_tag(name, oid):
+    data.update_ref(f"refs/tags/{name}", oid)
+
+
+# translate a name to oid or just return that oid if get_ref can't find it
+def get_oid(ref):
+    return data.get_ref(ref) or ref
 
 
 # check if file or dir is ignored
@@ -139,4 +149,3 @@ def is_ignored(path):
     parts = pathlib.Path(path).parts
     for name in ignore:
         if name in parts: return True
-

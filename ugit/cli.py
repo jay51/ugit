@@ -14,6 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="command")
     commands.required = True
+    oid = base.get_oid
 
     init_parser = commands.add_parser("init")
     init_parser.set_defaults(func=init)
@@ -26,7 +27,7 @@ def parse_args():
     # give the object oid will print the file
     cat_file_parser = commands.add_parser("cat_file")
     cat_file_parser.set_defaults(func=cat_file)
-    cat_file_parser.add_argument("oid")
+    cat_file_parser.add_argument("oid", type=oid)
 
     # given a directory will hash, store and return the oid of the directory
     write_tree_parser = commands.add_parser("write_tree")
@@ -35,7 +36,7 @@ def parse_args():
     # given a tree oid will parse entries inside object and write oids inside tree to working directory
     read_tree_parser = commands.add_parser("read_tree")
     read_tree_parser.set_defaults(func=read_tree)
-    read_tree_parser.add_argument("tree")
+    read_tree_parser.add_argument("tree", type=oid)
 
     # stores the current dirctory in object database and stores the oid of current directory and message in DB
     commit_parser = commands.add_parser("commit")
@@ -45,12 +46,18 @@ def parse_args():
     # log commit history from HEAD or provided oid
     log_parser = commands.add_parser("log")
     log_parser.set_defaults(func=log)
-    log_parser.add_argument("oid", nargs="?")
+    log_parser.add_argument("oid", type=oid, nargs="?")
 
     # write that commit tree to current directory and set HEAD to point at that commit
     checout_parser = commands.add_parser("checkout")
     checout_parser.set_defaults(func=checkout)
-    checout_parser.add_argument("oid", nargs="?")
+    checout_parser.add_argument("oid", type=oid, nargs="?")
+
+    # tag a name to a commit oid or oid in HEAD
+    tag_parser = commands.add_parser("tag")
+    tag_parser.set_defaults(func=tag)
+    tag_parser.add_argument("name")
+    tag_parser.add_argument("oid", type=oid, nargs="?")
 
     return parser.parse_args()
 
@@ -79,7 +86,7 @@ def commit(args):
 
 def log(args):
     # head always points to the last commit
-    oid = args.oid or data.get_head()
+    oid = args.oid or data.get_ref("HEAD")
     while oid:
         commit = base.get_commit(oid)
         print(f"commit {oid}\n")
@@ -87,8 +94,11 @@ def log(args):
         print()
         oid = commit.parent
 
-
 def checkout(args):
-    if args.oid:
+    if args.oid is not None:
         base.checkout(args.oid)
         print(f"on commit {args.oid}")
+
+def tag(args):
+    oid = args.oid or data.get_ref("HEAD")
+    base.create_tag(args.name, oid)
