@@ -46,19 +46,24 @@ def parse_args():
     # log commit history from HEAD or provided oid
     log_parser = commands.add_parser("log")
     log_parser.set_defaults(func=log)
-    log_parser.add_argument("oid", type=oid, nargs="?")
+    log_parser.add_argument("oid", default="@", type=oid, nargs="?")
 
     # write that commit tree to current directory and set HEAD to point at that commit
     checout_parser = commands.add_parser("checkout")
     checout_parser.set_defaults(func=checkout)
     checout_parser.add_argument("oid", type=oid, nargs="?")
 
-    # tag a name to a commit oid or oid in HEAD
+    # tag a name to a commit oid or HEAD oid
     tag_parser = commands.add_parser("tag")
     tag_parser.set_defaults(func=tag)
     tag_parser.add_argument("name")
-    tag_parser.add_argument("oid", type=oid, nargs="?")
+    tag_parser.add_argument("oid", default="@", type=oid, nargs="?")
 
+    k_parser = commands.add_parser("k")
+    k_parser.set_defaults(func=k)
+
+    # `@` is an alias for HEAD
+    # when you pass a tag or a name, it gets translated to oid in the parser
     return parser.parse_args()
 
 
@@ -85,8 +90,7 @@ def commit(args):
     print("commit: ", base.commit(args.message))
 
 def log(args):
-    # head always points to the last commit
-    oid = args.oid or data.get_ref("HEAD")
+    oid = args.oid
     while oid:
         commit = base.get_commit(oid)
         print(f"commit {oid}\n")
@@ -100,5 +104,8 @@ def checkout(args):
         print(f"on commit {args.oid}")
 
 def tag(args):
-    oid = args.oid or data.get_ref("HEAD")
-    base.create_tag(args.name, oid)
+    base.create_tag(args.name, args.oid)
+
+def k(args):
+    for refname, ref in data.iter_refs():
+        print(refname, ref)

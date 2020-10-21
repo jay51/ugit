@@ -28,6 +28,7 @@ def get_object(oid, expected="blob"):
         assert _type == expected, f"Expected {expected}, got {_type}"
     return content
 
+
 def get_ref(ref):
     rel_path = f"{GIT_DIR}/{ref}"
     if os.path.isfile(rel_path):
@@ -42,3 +43,14 @@ def update_ref(ref, oid):
     os.makedirs(os.path.dirname(rel_path), exist_ok=True)
     with open(rel_path, "w") as f:
         f.write(oid)
+
+# yields relative path to all files in refs dir
+def iter_refs():
+    refs = ["HEAD"]
+    for root, _, filenames in os.walk(f"{GIT_DIR}/refs/"):
+        # get relative path of root, relative to {GIT_DIR}
+        path = os.path.relpath(root, GIT_DIR)
+        refs.extend(f"{path}/{name}" for name in filenames)
+
+    for ref in refs:
+        yield ref, get_ref(ref)

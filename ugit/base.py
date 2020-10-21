@@ -2,6 +2,7 @@ import os
 import pathlib
 import itertools
 import operator
+import string
 from collections import namedtuple
 from . import data
 
@@ -139,8 +140,22 @@ def create_tag(name, oid):
 
 
 # translate a name to oid or just return that oid if get_ref can't find it
-def get_oid(ref):
-    return data.get_ref(ref) or ref
+def get_oid(name):
+    name = "HEAD" if name == "@" else name
+    refs_to_try = [
+        f'{name}',
+        f'refs/{name}',
+        f'refs/tags/{name}',
+        f'refs/heads/{name}',
+    ]
+    for ref in refs_to_try:
+        ref = data.get_ref(ref)
+        if ref is not None: return ref
+
+    is_hex = all(c in string.hexdigits for c in name)
+    if len(name) == 40 and is_hex:
+        return name
+    assert False, f"UNKOWN NAME {name}"
 
 
 # check if file or dir is ignored
