@@ -158,6 +158,21 @@ def get_oid(name):
     assert False, f"UNKOWN NAME {name}"
 
 
+# yield all commits it can reach from a given set of commit oids in a random order and uses graphiz to link them
+def iter_commits_and_parents(oids):
+    oids = set(oids)
+    visited = set()
+    while oids:
+        oid = oids.pop()
+        if not oid or oid in visited:
+            continue
+        visited.add(oid)
+        yield oid
+
+        commit = get_commit(oid)
+        oids.add(commit.parent)
+
+
 # check if file or dir is ignored
 def is_ignored(path):
     ignore = (".ugit", "env", ".git", "ugit")

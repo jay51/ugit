@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import textwrap
+import subprocess
 from . import data
 from . import base
 
@@ -59,6 +60,7 @@ def parse_args():
     tag_parser.add_argument("name")
     tag_parser.add_argument("oid", default="@", type=oid, nargs="?")
 
+    # visualize refs/commit history
     k_parser = commands.add_parser("k")
     k_parser.set_defaults(func=k)
 
@@ -107,5 +109,21 @@ def tag(args):
     base.create_tag(args.name, args.oid)
 
 def k(args):
+    oids = set()
+    dot = 'digraph commits {\n'
     for refname, ref in data.iter_refs():
-        print(refname, ref)
+        # print(refname, ref)
+        dot += f'"{refname}" [shape=note]\n'
+        dot += f'"{refname}" -> "{ref}"\n'
+        oids.add(ref)
+
+    for oid in base.iter_commits_and_parents(oids):
+        commit = base.get_commit(oid)
+        dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
+        if commit.parent:
+            dot += f'"{oid}" -> "{commit.parent}"\n'
+    dot += '}'
+
+    with open("graph.dot", "w") as f:
+        f.write(dot)
+    subprocess.run(['dot', '-Tgtk', 'graph.dot'])
