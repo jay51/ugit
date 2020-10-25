@@ -92,13 +92,11 @@ def commit(args):
     print("commit: ", base.commit(args.message))
 
 def log(args):
-    oid = args.oid
-    while oid:
+    for oid in base.iter_commits_and_parents({args.oid}):
         commit = base.get_commit(oid)
         print(f"commit {oid}\n")
         print(textwrap.indent(commit.msg, "     "))
         print()
-        oid = commit.parent
 
 def checkout(args):
     if args.oid is not None:
@@ -108,11 +106,11 @@ def checkout(args):
 def tag(args):
     base.create_tag(args.name, args.oid)
 
+# write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
 def k(args):
     oids = set()
     dot = 'digraph commits {\n'
     for refname, ref in data.iter_refs():
-        # print(refname, ref)
         dot += f'"{refname}" [shape=note]\n'
         dot += f'"{refname}" -> "{ref}"\n'
         oids.add(ref)
