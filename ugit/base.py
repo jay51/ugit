@@ -95,13 +95,13 @@ def read_tree(tree_oid):
 # calls write_tree, take oid returend and a message and store it as a new object in the database of type commit
 def commit(msg):
     commit = f"tree {write_tree()}\n"
-    HEAD = data.get_ref("HEAD")
+    HEAD = data.get_ref("HEAD").value
     if HEAD:
         commit += f"parent {HEAD}\n"
     commit += "\n"
     commit += f"{msg}\n"
     oid = data.hash_object(commit.encode(), "commit")
-    data.update_ref("HEAD", oid)
+    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
     return oid
 
 
@@ -131,17 +131,17 @@ def get_commit(oid, debug=False):
 def checkout(oid):
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.update_ref("HEAD", oid)
+    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
 
 
 # attach an oid to a name
 def create_tag(name, oid):
-    data.update_ref(f"refs/tags/{name}", oid)
+    data.update_ref(f"refs/tags/{name}", data.RefValue(symbolic=False, value=oid))
 
 
 # attach an oid to a branch name
 def create_branch(name, oid):
-    data.update_ref(f"refs/heads/{name}", oid)
+    data.update_ref(f"refs/heads/{name}", data.RefValue(symbolic=False, value=oid))
 
 
 # translate a name to oid or just return that oid if get_ref can't find it
@@ -154,7 +154,7 @@ def get_oid(name):
         f'refs/heads/{name}',
     ]
     for ref in refs_to_try:
-        ref = data.get_ref(ref)
+        ref = data.get_ref(ref, deref=False).value
         if ref is not None: return ref
 
     is_hex = all(c in string.hexdigits for c in name)

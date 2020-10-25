@@ -122,10 +122,12 @@ def branch(args):
 def k(args):
     oids = set()
     dot = 'digraph commits {\n'
-    for refname, ref in data.iter_refs():
+    for refname, ref in data.iter_refs(deref=False):
         dot += f'"{refname}" [shape=note]\n'
-        dot += f'"{refname}" -> "{ref}"\n'
-        oids.add(ref)
+        dot += f'"{refname}" -> "{ref.value}"\n'
+        # add only refs to oid (not symbolic ref to another ref)
+        if not ref.symbolic:
+            oids.add(ref.value)
 
     for oid in base.iter_commits_and_parents(oids):
         commit = base.get_commit(oid)

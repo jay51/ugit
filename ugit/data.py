@@ -1,5 +1,6 @@
 import os
 import hashlib
+from collections import namedtuple
 
 
 GIT_DIR = ".ugit"
@@ -29,28 +30,44 @@ def get_object(oid, expected="blob"):
     return content
 
 
-def get_ref(ref):
+RefValue = namedtuple("RefValue", ["symbolic", "value"])
+
+def get_ref(ref, deref=True):
+    return _get_ref_internal(ref, deref)[1]
+
+
+# return the ref passed in and it's oid or symbolic ref (if deref=true) of a tag or a branch
+def _get_ref_internal(ref, deref=True):
     rel_path = f"{GIT_DIR}/{ref}"
     value = None
     if os.path.isfile(rel_path):
         with open(rel_path, "r") as f:
             value = f.read().strip()
 
-    if value and value.startswith("ref:")
-        return get_ref(value.split(":", 1)[1].strip())
+    symbolic = bool(value) and value.startswith("ref:")
+    if symbolic:
+        value = get_ref(value.split(":", 1)[1].strip())
+        if deref:
+            return _get_ref_internal(value, deref=True)
 
-    return value
+    return ref, RefValue(symbolic=symbolic, value=value)
 
 
-def update_ref(ref, oid):
-    # this is a hacky way to also be able to write tags to ugit/tags/<tagname>
+def update_ref(ref, value, deref=True):
+    ref = _get_ref_internal(ref, deref)[0]
+    assert value.value
+    if value.symbolic:
+        value = f"ref: {value}"
+    else:
+        value = value.value
+
     rel_path = f"{GIT_DIR}/{ref}"
     os.makedirs(os.path.dirname(rel_path), exist_ok=True)
     with open(rel_path, "w") as f:
-        f.write(oid)
+        f.write(value)
 
 # yields relative path to all files in refs dir
-def iter_refs():
+def iter_refs(deref=False):
     refs = ["HEAD"]
     for root, _, filenames in os.walk(f"{GIT_DIR}/refs/"):
         # get relative path of root, relative to {GIT_DIR}
@@ -58,4 +75,4 @@ def iter_refs():
         refs.extend(f"{path}/{name}" for name in filenames)
 
     for ref in refs:
-        yield ref, get_ref(ref)
+        yield ref, get_ref(ref, deref=deref)
