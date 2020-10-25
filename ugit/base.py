@@ -139,6 +139,11 @@ def create_tag(name, oid):
     data.update_ref(f"refs/tags/{name}", oid)
 
 
+# attach an oid to a branch name
+def create_branch(name, oid):
+    data.update_ref(f"refs/heads/{name}", oid)
+
+
 # translate a name to oid or just return that oid if get_ref can't find it
 def get_oid(name):
     name = "HEAD" if name == "@" else name

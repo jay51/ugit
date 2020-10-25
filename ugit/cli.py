@@ -64,6 +64,12 @@ def parse_args():
     k_parser = commands.add_parser("k")
     k_parser.set_defaults(func=k)
 
+    # create new branch point to oid (default to HEAD)
+    tag_parser = commands.add_parser("branch")
+    tag_parser.set_defaults(func=branch)
+    tag_parser.add_argument("name")
+    tag_parser.add_argument("start_point", default="@", type=oid, nargs="?")
+
     # `@` is an alias for HEAD
     # when you pass a tag or a name, it gets translated to oid in the parser
     return parser.parse_args()
@@ -105,6 +111,12 @@ def checkout(args):
 
 def tag(args):
     base.create_tag(args.name, args.oid)
+
+def branch(args):
+    base.create_branch(args.name, args.start_point)
+    print(f'Branch {args.name} created at {args.start_point[:10]}')
+
+
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
 def k(args):
