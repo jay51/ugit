@@ -46,7 +46,7 @@ def _get_ref_internal(ref, deref=True):
 
     symbolic = bool(value) and value.startswith("ref:")
     if symbolic:
-        value = get_ref(value.split(":", 1)[1].strip())
+        value = value.split(":", 1)[1].strip()
         if deref:
             return _get_ref_internal(value, deref=True)
 
@@ -57,7 +57,7 @@ def update_ref(ref, value, deref=True):
     ref = _get_ref_internal(ref, deref)[0]
     assert value.value
     if value.symbolic:
-        value = f"ref: {value}"
+        value = f"ref: {value.value}"
     else:
         value = value.value
 

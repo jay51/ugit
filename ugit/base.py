@@ -128,10 +128,18 @@ def get_commit(oid, debug=False):
 
 
 # get the commit information then read_tree of that commit and set the HEAD to point at that commit
-def checkout(oid):
+def checkout(name):
+    # if branch name  return oid for branch. if oid return same oid
+    oid = get_oid(name)
     commit = get_commit(oid)
     read_tree(commit.tree)
-    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
+
+    if is_branch (name):
+        HEAD = data.RefValue(symbolic=True, value=f"refs/heads/{name}")
+    else:
+        HEAD = data.RefValue(symbolic=False, value=oid)
+
+    data.update_ref("HEAD", HEAD, deref=False)
 
 
 # attach an oid to a name
@@ -144,18 +152,22 @@ def create_branch(name, oid):
     data.update_ref(f"refs/heads/{name}", data.RefValue(symbolic=False, value=oid))
 
 
+def is_branch(branch):
+    return data.get_ref(f"refs/heads/{branch}").value is not None
+
+
 # translate a name to oid or just return that oid if get_ref can't find it
 def get_oid(name):
     name = "HEAD" if name == "@" else name
     refs_to_try = [
-        f'{name}',
-        f'refs/{name}',
-        f'refs/tags/{name}',
-        f'refs/heads/{name}',
+        f"{name}",
+        f"refs/{name}",
+        f"refs/tags/{name}",
+        f"refs/heads/{name}",
     ]
     for ref in refs_to_try:
-        ref = data.get_ref(ref, deref=False).value
-        if ref is not None: return ref
+        if data.get_ref(ref, deref=False).value:
+            return data.get_ref(ref, deref=True).value
 
     is_hex = all(c in string.hexdigits for c in name)
     if len(name) == 40 and is_hex:

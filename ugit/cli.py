@@ -52,7 +52,7 @@ def parse_args():
     # write that commit tree to current directory and set HEAD to point at that commit
     checout_parser = commands.add_parser("checkout")
     checout_parser.set_defaults(func=checkout)
-    checout_parser.add_argument("oid", type=oid, nargs="?")
+    checout_parser.add_argument("commit")
 
     # tag a name to a commit oid or HEAD oid
     tag_parser = commands.add_parser("tag")
@@ -65,10 +65,10 @@ def parse_args():
     k_parser.set_defaults(func=k)
 
     # create new branch point to oid (default to HEAD)
-    tag_parser = commands.add_parser("branch")
-    tag_parser.set_defaults(func=branch)
-    tag_parser.add_argument("name")
-    tag_parser.add_argument("start_point", default="@", type=oid, nargs="?")
+    branch_parser = commands.add_parser("branch")
+    branch_parser.set_defaults(func=branch)
+    branch_parser.add_argument("name")
+    branch_parser.add_argument("start_point", default="@", type=oid, nargs="?")
 
     # `@` is an alias for HEAD
     # when you pass a tag or a name, it gets translated to oid in the parser
@@ -105,9 +105,8 @@ def log(args):
         print()
 
 def checkout(args):
-    if args.oid is not None:
-        base.checkout(args.oid)
-        print(f"on commit {args.oid}")
+    base.checkout(args.commit)
+    print(f"on commit {args.commit}")
 
 def tag(args):
     base.create_tag(args.name, args.oid)
@@ -138,4 +137,4 @@ def k(args):
 
     with open("graph.dot", "w") as f:
         f.write(dot)
-    subprocess.run(['dot', '-Tgtk', 'graph.dot'])
+    # subprocess.run(['dot', '-Tgtk', 'graph.dot'])
