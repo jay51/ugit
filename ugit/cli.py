@@ -73,8 +73,16 @@ def parse_args():
     # `@` is an alias for HEAD
     # when you pass a tag or a name, it gets translated to oid in the parser
 
+    # print the current branch
     status_parser = commands.add_parser("status")
     status_parser.set_defaults(func=status)
+
+
+    # change HEAD and the current branhc to point at the oid
+    reset_parser = commands.add_parser("reset")
+    reset_parser.set_defaults(func=reset)
+    reset_parser.add_argument("commit", type=oid)
+
     return parser.parse_args()
 
 
@@ -138,6 +146,10 @@ def status(args):
         print(f'On branch {branch}')
     else:
         print(f'HEAD detached at {HEAD[:10]}')
+
+
+def reset(args):
+    base.reset(args.commit)
 
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them

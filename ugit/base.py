@@ -147,6 +147,11 @@ def checkout(name):
     data.update_ref("HEAD", HEAD, deref=False)
 
 
+# changes HEAD and the current branch to point at the oid
+def reset(oid):
+    data.update_ref("HEAD", data.RefValue(symbolic=False, value=oid))
+
+
 # attach an oid to a name
 def create_tag(name, oid):
     data.update_ref(f"refs/tags/{name}", data.RefValue(symbolic=False, value=oid))
