@@ -7,6 +7,11 @@ from collections import deque, namedtuple
 from . import data
 
 
+def init():
+    data.init()
+    data.update_ref("HEAD", data.RefValue(symbolic=True, value="refs/heads/master"))
+
+
 # recursively hash and store the content of directory inside object DB
 # And store all hashes, type of object and name for objects in new object with type tree
 def write_tree (directory='.'):

@@ -54,6 +54,7 @@ def _get_ref_internal(ref, deref=True):
 
 
 def update_ref(ref, value, deref=True):
+    # this will return what HEAD is pointing to e.g. /refs/heads/master
     ref = _get_ref_internal(ref, deref)[0]
     assert value.value
     if value.symbolic:

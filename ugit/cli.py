@@ -76,7 +76,7 @@ def parse_args():
 
 
 def init(args):
-    data.init()
+    base.init()
     print (f'Initialized empty ugit repository in {os.getcwd()}/{data.GIT_DIR}')
 
 
@@ -137,4 +137,4 @@ def k(args):
 
     with open("graph.dot", "w") as f:
         f.write(dot)
-    # subprocess.run(['dot', '-Tgtk', 'graph.dot'])
+    subprocess.run(['dot', '-Tgtk', 'graph.dot'])
