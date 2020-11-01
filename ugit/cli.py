@@ -101,9 +101,15 @@ def commit(args):
     print("commit: ", base.commit(args.message))
 
 def log(args):
+    # build a hashtable or oid key to value refnames pointing to oid
+    refs = {}
+    for refname, ref in data.iter_refs():
+        refs.setdefault(ref.value, []).append(refname)
+
     for oid in base.iter_commits_and_parents({args.oid}):
         commit = base.get_commit(oid)
-        print(f"commit {oid}\n")
+        refs_str = f' ({", ".join (refs[oid])})' if oid in refs else ""
+        print(f"commit {oid} {refs_str})")
         print(textwrap.indent(commit.msg, "     "))
         print()
 
