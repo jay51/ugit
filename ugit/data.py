@@ -68,7 +68,7 @@ def update_ref(ref, value, deref=True):
         f.write(value)
 
 # yields relative path to all files in refs dir
-def iter_refs(deref=False):
+def iter_refs(prefix="", deref=False):
     refs = ["HEAD"]
     for root, _, filenames in os.walk(f"{GIT_DIR}/refs/"):
         # get relative path of root, relative to {GIT_DIR}
@@ -76,4 +76,6 @@ def iter_refs(deref=False):
         refs.extend(f"{path}/{name}" for name in filenames)
 
     for ref in refs:
+        if not ref.startswith(prefix):
+            continue
         yield ref, get_ref(ref, deref=deref)

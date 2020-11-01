@@ -161,6 +161,21 @@ def is_branch(branch):
     return data.get_ref(f"refs/heads/{branch}").value is not None
 
 
+def get_branch_name():
+    HEAD = data.get_ref("HEAD", deref=False)
+    # if HEAD is not symbolic, it means it's detached HEAD bc/ we always need to point to a branch
+    if not HEAD.symbolic:
+        return None
+    HEAD = HEAD.value
+    assert HEAD.startswith("refs/heads/")
+    return os.path.relpath(HEAD, "refs/heads")
+
+
+def iter_branch_names():
+    for refname, _ in data.iter_refs("refs/heads"):
+        yield os.path.relpath(refname, "refs/heads")
+
+
 # translate a name to oid or just return that oid if get_ref can't find it
 def get_oid(name):
     name = "HEAD" if name == "@" else name
