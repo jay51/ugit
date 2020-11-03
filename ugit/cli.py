@@ -5,6 +5,7 @@ import textwrap
 import subprocess
 from . import data
 from . import base
+from . import diff
 
 def main():
     args = parse_args()
@@ -167,8 +168,17 @@ def show(args):
     if not args.oid:
         return None
     commit = base.get_commit(args.oid)
-    _print_commit(args.oid, commit)
+    parent_tree = None
+    if commit.parent is not None:
+        parent_tree = base.get_commit(commit.parent).tree
 
+    _print_commit(args.oid, commit)
+    result = diff.diff_trees(
+        base.get_tree(parent_tree),
+        base.get_tree(commit.tree)
+    )
+    sys.stdout.flush()
+    sys.stdout.buffer.write(result)
 
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
