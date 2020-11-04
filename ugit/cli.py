@@ -84,10 +84,15 @@ def parse_args():
     reset_parser.set_defaults(func=reset)
     reset_parser.add_argument("commit", type=oid)
 
-    # show diff of commit
+    # show diff of commit current commit and parent
     show_parser = commands.add_parser("show")
     show_parser.set_defaults(func=show)
     show_parser.add_argument("oid", default="@", type=oid, nargs="?")
+
+    # diff the current working tree changes to a commit (not diff a commit to commit but a commit tot current changes)
+    diff_parser = commands.add_parser("diff")
+    diff_parser.set_defaults(func=_diff)
+    diff_parser.add_argument("commit", default="@", type=oid, nargs="?")
 
     return parser.parse_args()
 
@@ -180,6 +185,14 @@ def show(args):
     sys.stdout.flush()
     sys.stdout.buffer.write(result)
 
+
+def _diff(args):
+    tree = args.commit and base.get_commit(args.commit).tree
+
+    # diff tree with args.commit.oid to current working tree
+    result = diff.diff_trees(base.get_tree(tree), base.get_working_tree())
+    sys.stdout.flush()
+    sys.stdout.buffer.write(result)
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
 def k(args):
