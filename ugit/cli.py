@@ -150,19 +150,26 @@ def branch(args):
         curr = base.get_branch_name()
         for branch in base.iter_branch_names():
             prefix = "*" if curr == branch else "  "
-            print (f'{prefix} {branch}')
+            print (f"{prefix} {branch}")
     else:
         base.create_branch(args.name, args.start_point)
-        print(f'Branch {args.name} created at {args.start_point[:10]}')
+        print(f"Branch {args.name} created at {args.start_point[:10]}")
 
 
 def status(args):
     HEAD = base.get_oid("@")
     branch = base.get_branch_name()
     if branch:
-        print(f'On branch {branch}')
+        print(f"On branch {branch}")
     else:
-        print(f'HEAD detached at {HEAD[:10]}')
+        print(f"HEAD detached at {HEAD[:10]}")
+
+    print("\n Changes to be commited:\n")
+    HEAD_tree = HEAD and base.get_commit(HEAD).tree
+    for path, action in diff.iter_changed_files(
+                                            base.get_tree(HEAD_tree),
+                                            base.get_working_tree()):
+        print (f"{action:>12}: {path}")
 
 
 def reset(args):

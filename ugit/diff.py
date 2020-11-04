@@ -5,7 +5,7 @@ from . import data
 
 
 # def x(*trees) is a function that accepts many arguments and put them in list
-# returns dict of each in file tree as key and both trees' oid of file as value
+# returns dict of each file in tree as key and both trees' oid of file as value
 def compare_trees(*trees):
     # Any key that does not exist gets the value returned by the default lambda 
     entries = defaultdict(lambda: [None] * len(trees))
@@ -45,5 +45,15 @@ def diff_blob(o_from, o_to, path="blob"):
             output, _ = proc.communicate ()
     return output
 
+
+def iter_changed_files(t_from, t_to):
+    for path, o_from, o_to in compare_trees(t_from, t_to):
+        if o_from != o_to:
+            action = (
+                "new file" if not o_from else
+                "deleted" if not o_to else
+                "modified"
+            )
+        yield path, action
 
 
