@@ -123,6 +123,11 @@ def commit(msg):
     return oid
 
 
+def merge(other):
+    # merge two branches togather
+    pass
+
+
 # parse a commit object and return a commit tuple with tree, parent and msg of commit object
 Commit = namedtuple("Commit", ["tree", "parent", "msg"])
 def get_commit(oid, debug=False):
