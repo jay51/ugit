@@ -5,6 +5,7 @@ import operator
 import string
 from collections import deque, namedtuple
 from . import data
+from . import diff
 
 
 def init():
@@ -124,8 +125,22 @@ def commit(msg):
 
 
 def merge(other):
-    # merge two branches togather
-    pass
+    HEAD = data.get_ref("HEAD").value
+    assert HEAD
+    c_HEAD = get_commit(HEAD)
+    c_other = get_commit(other)
+    read_tree_merged(c_HEAD.tree, c_other.tree)
+    print("Merged in working tree")
+
+
+
+# given 2 trees, will merge and write to working dir
+def read_tree_merged(t_HEAD, t_other):
+    _empty_current_directory()
+    for path, blob in diff.merge_trees(get_tree(t_HEAD), get_tree(t_other)).items():
+        os.makedirs(f"./{os.path.dirname(path)}", exist_ok=True)
+        with open(path, "wb") as f:
+            f.write(blob)
 
 
 # parse a commit object and return a commit tuple with tree, parent and msg of commit object

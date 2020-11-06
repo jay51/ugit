@@ -54,6 +54,32 @@ def iter_changed_files(t_from, t_to):
                 "deleted" if not o_to else
                 "modified"
             )
-        yield path, action
+            yield path, action
 
+
+# given 2 trees, will go over each file from both trees, merge and store in a dict
+def merge_trees(t_HEAD, t_other):
+    tree = dict()
+    for path, o_HEAD, o_other in compare_trees(t_HEAD, t_other):
+        tree[path] = merge_blobs(o_HEAD, o_other)
+
+    return tree
+
+
+# given 2 file oids, will read files into temp files merge and return merged content
+def merge_blobs(o_HEAD, o_other):
+    with Temp() as f_HEAD, Temp() as f_other:
+        for oid, f in ((o_HEAD, f_HEAD), (o_other, f_other)):
+            if oid:
+                f.write(data.get_object(oid))
+                f.flush()
+
+        with subprocess.Popen ([
+            "diff",
+            "-DHEAD", f_HEAD.name,
+            f_other.name
+        ], stdout=subprocess.PIPE) as proc:
+            output, _ = proc.communicate ()
+
+        return output
 
