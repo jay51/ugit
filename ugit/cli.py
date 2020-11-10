@@ -89,7 +89,7 @@ def parse_args():
     show_parser.set_defaults(func=show)
     show_parser.add_argument("oid", default="@", type=oid, nargs="?")
 
-    # diff the current working tree changes to a commit (not diff a commit to commit but a commit tot current changes)
+    # diff the current working tree changes to a commit (not diff a commit to commit but a commit to current changes)
     diff_parser = commands.add_parser("diff")
     diff_parser.set_defaults(func=_diff)
     diff_parser.add_argument("commit", default="@", type=oid, nargs="?")
@@ -185,8 +185,8 @@ def show(args):
         return None
     commit = base.get_commit(args.oid)
     parent_tree = None
-    if commit.parent is not None:
-        parent_tree = base.get_commit(commit.parent).tree
+    if commit.parents:
+        parent_tree = base.get_commit(commit.parents[0]).tree
 
     _print_commit(args.oid, commit)
     result = diff.diff_trees(
@@ -222,8 +222,8 @@ def k(args):
     for oid in base.iter_commits_and_parents(oids):
         commit = base.get_commit(oid)
         dot += f'"{oid}" [shape=box style=filled label="{oid[:10]}"]\n'
-        if commit.parent:
-            dot += f'"{oid}" -> "{commit.parent}"\n'
+        for parent in commit.parents:
+            dot += f'"{oid}" -> "{parent}"\n'
     dot += '}'
 
     with open("graph.dot", "w") as f:

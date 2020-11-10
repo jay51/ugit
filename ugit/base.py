@@ -144,22 +144,23 @@ def read_tree_merged(t_HEAD, t_other):
 
 
 # parse a commit object and return a commit tuple with tree, parent and msg of commit object
-Commit = namedtuple("Commit", ["tree", "parent", "msg"])
+Commit = namedtuple("Commit", ["tree", "parents", "msg"])
 def get_commit(oid, debug=False):
     commit = data.get_object(oid, "commit").decode()
     lines = iter(commit.splitlines())
-    parent, tree = "", ""
+    parents, tree = [], ""
     for line in itertools.takewhile(operator.truth, lines):
         key, value = line.split(" ", 1)
         if key == "tree":
             tree = value
         elif key == "parent":
-            parent = value
+            parents.append(value)
+
         else:
             assert False, f"Unkown Field {key}"
 
     msg = "\n".join(lines)
-    c = Commit(tree=tree, parent=parent, msg=msg)
+    c = Commit(tree=tree, parents=parents, msg=msg)
     if debug:
         print(c)
     return c
@@ -245,7 +246,10 @@ def iter_commits_and_parents(oids):
         yield oid
 
         commit = get_commit(oid)
-        oids.appendleft(commit.parent)
+        # RETURN FIRST PARENT NEXT
+        oids.extendleft(commit.parents[:1])
+        # RETURN OTHER PARENTS LATER
+        oids.extend(commit.parents[1:])
 
 
 # check if file or dir is ignored
