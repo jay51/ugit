@@ -36,7 +36,13 @@ def get_ref(ref, deref=True):
     return _get_ref_internal(ref, deref)[1]
 
 
-# return the ref passed in and it's oid or symbolic ref (if deref=true) of a tag or a branch
+# delete a ref by removing the branch file that stores oid to commit (not removing object in DB)
+def delete_ref(ref, deref=True):
+    ref = _get_ref_internal(ref, deref)[0]
+    os.remove(f"{GIT_DIR}/{ref}")
+
+
+# return the ref (path to a branch) and its symbolic ref or oid (if deref=true) of a tag or a branch
 def _get_ref_internal(ref, deref=True):
     rel_path = f"{GIT_DIR}/{ref}"
     value = None
