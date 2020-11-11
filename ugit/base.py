@@ -138,6 +138,13 @@ def merge(other):
     print("Merged in working tree\nPlease commit")
 
 
+# given 2 commit oids, find/return the first common parent
+def get_merge_base(c1, c2):
+    c1_parents = list(iter_commits_and_parents({c1}))
+    for oid in iter_commits_and_parents({c2}):
+        if oid in c1_parents:
+            return oid
+
 
 # given 2 trees, will merge and write to working dir
 def read_tree_merged(t_HEAD, t_other):

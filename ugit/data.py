@@ -75,13 +75,15 @@ def update_ref(ref, value, deref=True):
 
 # yields relative path to all files in refs dir
 def iter_refs(prefix="", deref=False):
-    refs = ["HEAD"]
+    refs = ["HEAD", "MERGE_HEAD"]
     for root, _, filenames in os.walk(f"{GIT_DIR}/refs/"):
         # get relative path of root, relative to {GIT_DIR}
         path = os.path.relpath(root, GIT_DIR)
         refs.extend(f"{path}/{name}" for name in filenames)
 
-    for ref in refs:
-        if not ref.startswith(prefix):
+    for ref_name in refs:
+        if not ref_name.startswith(prefix):
             continue
-        yield ref, get_ref(ref, deref=deref)
+        ref = get_ref(ref_name, deref=deref)
+        if ref.value:
+            yield ref_name, ref

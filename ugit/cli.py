@@ -94,9 +94,16 @@ def parse_args():
     diff_parser.set_defaults(func=_diff)
     diff_parser.add_argument("commit", default="@", type=oid, nargs="?")
 
+    # merge 2 branches
     merge_parser = commands.add_parser("merge")
     merge_parser.set_defaults(func=merge)
     merge_parser.add_argument("commit", type=oid)
+
+    # given 2 commit oids or refs, will find the first common parent
+    merge_base_parser = commands.add_parser("merge-base")
+    merge_base_parser.set_defaults(func=merge_base)
+    merge_base_parser.add_argument("commit1", type=oid)
+    merge_base_parser.add_argument("commit2", type=oid)
 
     return parser.parse_args()
 
@@ -211,6 +218,11 @@ def _diff(args):
 
 def merge(args):
     base.merge(args.commit)
+
+
+def merge_base(args):
+    common_parent = base.get_merge_base(args.commit1, args.commit2)
+    print(f"First common Parent: {common_parent}")
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
 def k(args):
