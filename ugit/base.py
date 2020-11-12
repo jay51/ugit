@@ -131,10 +131,12 @@ def commit(msg):
 def merge(other):
     HEAD = data.get_ref("HEAD").value
     assert HEAD
+    merge_base = get_merge_base(other, HEAD)
+    c_base = get_commit(merge_base)
     c_HEAD = get_commit(HEAD)
     c_other = get_commit(other)
     data.update_ref("MERGE_HEAD", data.RefValue(symbolic=False, value=other))
-    read_tree_merged(c_HEAD.tree, c_other.tree)
+    read_tree_merged(c_base.tree, c_HEAD.tree, c_other.tree)
     print("Merged in working tree\nPlease commit")
 
 
@@ -146,10 +148,11 @@ def get_merge_base(c1, c2):
             return oid
 
 
-# given 2 trees, will merge and write to working dir
-def read_tree_merged(t_HEAD, t_other):
+# given 2 and a common parent trees, will merge and write to working dir
+def read_tree_merged(t_base, t_HEAD, t_other):
     _empty_current_directory()
-    for path, blob in diff.merge_trees(get_tree(t_HEAD), get_tree(t_other)).items():
+    merged_tree = diff.merge_trees(get_tree(t_base), get_tree(t_HEAD), get_tree(t_other)).items()
+    for path, blob in merged_tree:
         os.makedirs(f"./{os.path.dirname(path)}", exist_ok=True)
         with open(path, "wb") as f:
             f.write(blob)
