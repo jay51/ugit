@@ -1,10 +1,21 @@
 import os
 import hashlib
 from collections import namedtuple
+from contextlib import contextmanager
 
 
-GIT_DIR = ".ugit"
+# will be temp initalized in cli.main()
+GIT_DIR = None
 GIT_OBJECTS = ".ugit/objects"
+
+@contextmanager
+def change_git_dir(new_dir):
+    global GIT_DIR
+    old_dir = GIT_DIR
+    GIT_DIR = f"{new_dir}/.ugit"
+    yield
+    GIT_DIR = old_dir
+
 
 
 def init():

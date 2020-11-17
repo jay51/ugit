@@ -8,8 +8,10 @@ from . import base
 from . import diff
 
 def main():
-    args = parse_args()
-    args.func(args)
+    # sets GIT_DIR to `.` and then resets it back when exit `with` block
+    with data.change_git_dir("."):
+        args = parse_args()
+        args.func(args)
 
 
 def parse_args():
