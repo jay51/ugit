@@ -6,6 +6,7 @@ import subprocess
 from . import data
 from . import base
 from . import diff
+from . import remote
 
 def main():
     # sets GIT_DIR to `.` and then resets it back when exit `with` block
@@ -106,6 +107,12 @@ def parse_args():
     merge_base_parser.set_defaults(func=merge_base)
     merge_base_parser.add_argument("commit1", type=oid)
     merge_base_parser.add_argument("commit2", type=oid)
+
+
+    # fetchs a remote repository (on filesystem)
+    fetch_parser = commands.add_parser("fetch")
+    fetch_parser.set_defaults(func=fetch)
+    fetch_parser.add_argument("remote")
 
     return parser.parse_args()
 
@@ -225,6 +232,11 @@ def merge(args):
 def merge_base(args):
     common_parent = base.get_merge_base(args.commit1, args.commit2)
     print(f"First common Parent: {common_parent}")
+
+def fetch(args):
+    remote.fetch(args.remote)
+
+
 
 # write all refs and the commit a ref points to, then write history of commits and uses graphiz to link them
 def k(args):
