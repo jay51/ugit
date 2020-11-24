@@ -1,5 +1,6 @@
 import os
 import hashlib
+import shutil
 from collections import namedtuple
 from contextlib import contextmanager
 
@@ -98,3 +99,14 @@ def iter_refs(prefix="", deref=False):
         ref = get_ref(ref_name, deref=deref)
         if ref.value:
             yield ref_name, ref
+
+
+# check if an object file exist
+def object_exist(oid):
+    return os.path.isfile(f"{GIT_DIR}/objects/{oid}")
+
+def fetch_object_if_missing(oid, remote_git_dir):
+    if object_exist(oid):
+        return
+    remote_git_dir += "/.ugit"
+    shutil.copy(f"{remote_git_dir}/objects/{oid}", f"{GIT_DIR}/objects/{oid}")

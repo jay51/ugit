@@ -258,6 +258,7 @@ def get_oid(name):
 
 # yield all commits it can reach from a given set of commit oids in order (DFS on a commit history)
 def iter_commits_and_parents(oids):
+    # NOTE: must yield oid before accessing it to allow caller to fetch it if needed.
     oids = deque(oids)
     visited = set()
     while oids:
@@ -272,6 +273,31 @@ def iter_commits_and_parents(oids):
         oids.extendleft(commit.parents[:1])
         # RETURN OTHER PARENTS LATER
         oids.extend(commit.parents[1:])
+
+# yields all objects reachable by commit oids (objects != commits)
+def iter_objects_in_commits(oids):
+    # NOTE: must yield oid before accessing it to allow caller to fetch it if needed.
+
+    visited = set()
+    # iter over a tree and add/yield all its object oids (recursively)
+    def iter_objects_in_tree(oid):
+        visited.add(oid)
+        yield oid
+        for _type, oid, _ in _iter_tree_entries(oid):
+            if oid not in visited:
+                if _type == "tree":
+                    # http://simeonvisser.com/posts/python-3-using-yield-from-in-generators-part-1.html
+                    yield from iter_objects_in_tree(oid)
+                else:
+                    visited.add(oid)
+                    yield oid
+
+    # get commit oids history and traverse it history for objects
+    for oid in iter_commits_and_parents(oids):
+        yield oid
+        commit = get_commit(oid)
+        if commit.tree not in visited:
+            yield from iter_objects_in_tree(commit.tree)
 
 
 # check if file or dir is ignored

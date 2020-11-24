@@ -233,6 +233,9 @@ def merge_base(args):
     common_parent = base.get_merge_base(args.commit1, args.commit2)
     print(f"First common Parent: {common_parent}")
 
+# Do `git fetch <path_to_remote>` to fetch the refs and missing DB objects
+# To test do `for file in $(ls .ugit/objects/); do cat .ugit/objects/$file; done | less`
+# and vim-search for a file from remote repo to confirm
 def fetch(args):
     remote.fetch(args.remote)
 
