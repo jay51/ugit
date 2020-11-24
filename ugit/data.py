@@ -110,3 +110,9 @@ def fetch_object_if_missing(oid, remote_git_dir):
         return
     remote_git_dir += "/.ugit"
     shutil.copy(f"{remote_git_dir}/objects/{oid}", f"{GIT_DIR}/objects/{oid}")
+
+
+# copy object by it's oid to remote repo
+def push_object(oid, remote_git_dir):
+    remote_git_dir += "/.ugit"
+    shutil.copy(f"{GIT_DIR}/objects/{oid}", f"{remote_git_dir}/objects/{oid}")

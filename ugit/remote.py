@@ -24,6 +24,21 @@ def fetch(remote_path):
             data.RefValue(symbolic=False, value=value)
         )
 
+# push all object files for a branch to a remote branch
+def push(remote_path, refname):
+    # Get refs data (oid)
+    local_ref = data.get_ref(refname).value
+    assert local_ref
+
+    objects_to_push = base.iter_objects_in_commits({local_ref})
+    # Push all objects to remote
+    for oid in objects_to_push:
+        data.push_object(oid, remote_path)
+
+    # Update remote ref to point at our target branch oid
+    with data.change_git_dir(remote_path):
+        data.update_ref(refname, data.RefValue(symbolic=False, value=local_ref))
+
 
 def _get_remote_refs(remote_path, prefix=""):
     with data.change_git_dir(remote_path):
