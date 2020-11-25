@@ -27,10 +27,17 @@ def fetch(remote_path):
 # push all object files for a branch to a remote branch
 def push(remote_path, refname):
     # Get refs data (oid)
+    remote_refs = _get_remote_refs(remote_path)
     local_ref = data.get_ref(refname).value
     assert local_ref
 
-    objects_to_push = base.iter_objects_in_commits({local_ref})
+    # Compute which objects the remote doesn't have
+    known_remote_refs = filter(data.object_exist, remote_refs.values())
+    remote_objects = set(base.iter_objects_in_commits(known_remote_refs))
+    local_objects = set(base.iter_objects_in_commits({local_ref}))
+
+    # outer left join
+    objects_to_push = local_objects - remote_objects
     # Push all objects to remote
     for oid in objects_to_push:
         data.push_object(oid, remote_path)
