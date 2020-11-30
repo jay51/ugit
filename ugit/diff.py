@@ -14,7 +14,7 @@ def compare_trees(*trees):
             entries[path][i] = oid
 
     for path, oids in entries.items():
-        yield path, *oids
+        yield (path, *oids)
 
 
 # takes 2 oids, if they don't match, we call diff_blog on the 2
